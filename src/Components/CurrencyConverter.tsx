@@ -14,13 +14,15 @@ import {
 } from '@mui/material';
 import { setAmountFrom, setAmountTo, setFromCurrency, setToCurrency, setExchangeRate } from '../store/currencySlice';
 import { useExchange } from '../hooks/useExchange';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
 const currencies = [
-  { name: "United States Dollar USD", code: "USD" },
-  { name: "Philippine Peso PHP", code: "PHP" },
-  { name: "Japanese Yen JPY", code: "JPY" },
-  { name: "Canadian Dollar CAD", code: "CAD" },
+  { name: "United States Dollar", code: "USD", symbol: "$" },
+  { name: "Philippine Peso", code: "PHP", symbol: "₱" },
+  { name: "Japanese Yen", code: "JPY", symbol: "¥" },
+  { name: "Canadian Dollar", code: "CAD", symbol: "$" },
 ];
+
 
 const CurrencyConverter = () => {
   const dispatch = useDispatch();
@@ -50,50 +52,56 @@ const CurrencyConverter = () => {
 
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      bgcolor="#f4f4f4"
-      p={2}
-    >
-
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+            bgcolor="#f4f4f4"
+            p={2}
+          >
         <Grid container spacing={3} direction="column" alignItems="center">
-          <Paper sx={{p:5}}>
+          <Paper sx={{p:3}} >
           <Grid item>
-            <Typography variant="h5" gutterBottom textAlign={'center'} pb={5}>
-              Currency Converter
-            </Typography>
+          <Typography variant="h5" gutterBottom textAlign={'center'} pb={5} sx={{ color: '#06402B' }}>
+              <CurrencyExchangeIcon sx={{ mr: 1 }} /> Currency Converter
+          </Typography>
           </Grid>
 
-          <Grid item>
-            <FormControl fullWidth>
-              <InputLabel>Select From Currency</InputLabel>
-              <Select
-                value={fromCurrency}
-                onChange={(e) => dispatch(setFromCurrency(e.target.value))}
-                label="Select From Currency"
+          <Grid container spacing={3} direction="row" alignItems="center" >
+            <Grid item xs={12} sm={7}>
+              <FormControl fullWidth>
+                <InputLabel>Select From Currency</InputLabel>
+                <Select
+                  value={fromCurrency}
+                  onChange={(e) => dispatch(setFromCurrency(e.target.value))}
+                  label="Select From Currency"
+                  sx={{ mb: 2 }}
+                  fullWidth         
+                >
+                  {currencies.map((currency) => (
+                    <MenuItem key={currency.code} value={currency.code}>
+                    {currency.code} -   {currency.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={5}>
+              <TextField
+                label="Amount in From Currency"
+                fullWidth
+                type="number"
+                value={amountFrom}
+                onChange={(e) => dispatch(setAmountFrom(Number(e.target.value)))}
                 sx={{ mb: 2 }}
-              >
-                {currencies.map((currency) => (
-                  <MenuItem key={currency.code} value={currency.code}>
-                    {currency.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Amount in From Currency"
-              fullWidth
-              type="number"
-              value={amountFrom}
-              onChange={(e) => dispatch(setAmountFrom(Number(e.target.value)))}
-              sx={{ mb: 2 }}
-            />
+              />
+            </Grid>
           </Grid>
 
-          <Grid item>
+        <Grid container spacing={3} direction="row" alignItems="center" sx={{ pt: 3 }}>
+        <Grid item xs={12} sm={7}>
             <FormControl fullWidth>
               <InputLabel>Select To Currency</InputLabel>
               <Select
@@ -101,14 +109,17 @@ const CurrencyConverter = () => {
                 onChange={(e) => dispatch(setToCurrency(e.target.value))}
                 label="Select To Currency"
                 sx={{ mb: 2 }}
+                fullWidth
               >
                 {currencies.map((currency) => (
                   <MenuItem key={currency.code} value={currency.code}>
-                    {currency.name}
+                  {currency.code} - {currency.name} 
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={5}>
             <TextField
               label="Amount in To Currency"
               fullWidth
@@ -117,7 +128,8 @@ const CurrencyConverter = () => {
               onChange={handleAmountToChange}
               sx={{ mb: 2 }}
             />
-          </Grid>
+            </Grid>
+        </Grid>
 
           {isLoading && (
             <Grid item>
