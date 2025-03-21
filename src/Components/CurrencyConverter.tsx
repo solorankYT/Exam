@@ -1,36 +1,80 @@
-import React, { useState } from 'react';
-import { Button, TextField, MenuItem, Select, InputLabel, FormControl, Container, Grid2 } from '@mui/material';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Box,
+  Grid,
+  CircularProgress,
+  Typography,
+  Paper,
+} from '@mui/material';
+import { setAmountFrom, setAmountTo, setFromCurrency, setToCurrency, setExchangeRate } from '../store/currencySlice';
+import { useExchange } from '../hooks/useExchange';
 
 const currencies = [
-  { name: "Philippine Peso PHP", code: "PHP" },
   { name: "United States Dollar USD", code: "USD" },
+  { name: "Philippine Peso PHP", code: "PHP" },
   { name: "Japanese Yen JPY", code: "JPY" },
   { name: "Canadian Dollar CAD", code: "CAD" },
 ];
 
 const CurrencyConverter = () => {
-  const [fromCurrency, setFromCurrency] = useState<string>("PHP");
-  const [toCurrency, setToCurrency] = useState<string>("USD");
-  const [amount, setAmount] = useState<number>(0);
-  const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
+  const dispatch = useDispatch();
+  const { amountFrom, amountTo, fromCurrency, toCurrency, exchangeRate } = useSelector(
+    (state: { currency: { amountFrom: number; amountTo: number; fromCurrency: string; toCurrency: string; exchangeRate: number } }) => state.currency
+  );
 
-  const handleConversion = () => {
-    // Mock conversion logic (replace this with real API call)
-    const conversionRate = 0.85; // Example conversion rate (replace with real API rate)
-    setConvertedAmount(amount * conversionRate); // Simple mock conversion
+  const { data, isLoading, isError, error } = useExchange(fromCurrency, toCurrency);
+
+  useEffect(() => {
+    if (data && amountFrom) {
+      const rate = data.conversion_rates[toCurrency];
+      const convertedAmount = amountFrom * rate;
+      dispatch(setAmountTo(convertedAmount));
+      dispatch(setExchangeRate(rate));
+    }
+  }, [data, amountFrom, toCurrency, dispatch]);
+
+  const handleAmountToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = Number(e.target.value);
+    dispatch(setAmountTo(newAmount));
+    if (exchangeRate) {
+      const convertedAmount = newAmount / exchangeRate;
+      dispatch(setAmountFrom(convertedAmount));
+    }
   };
 
+
   return (
-    <Container maxWidth="sm">
-      <form>
-        <Grid2 container spacing={3} direction="column" alignItems="center">
-          <Grid2 item>
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      height="100vh"
+      bgcolor="#f4f4f4"
+      p={2}
+    >
+
+        <Grid container spacing={3} direction="column" alignItems="center">
+          <Paper sx={{p:5}}>
+          <Grid item>
+            <Typography variant="h5" gutterBottom textAlign={'center'} pb={5}>
+              Currency Converter
+            </Typography>
+          </Grid>
+
+          <Grid item>
             <FormControl fullWidth>
               <InputLabel>Select From Currency</InputLabel>
               <Select
                 value={fromCurrency}
-                onChange={(e) => setFromCurrency(e.target.value)}
+                onChange={(e) => dispatch(setFromCurrency(e.target.value))}
                 label="Select From Currency"
+                sx={{ mb: 2 }}
               >
                 {currencies.map((currency) => (
                   <MenuItem key={currency.code} value={currency.code}>
@@ -39,15 +83,24 @@ const CurrencyConverter = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid2>
+            <TextField
+              label="Amount in From Currency"
+              fullWidth
+              type="number"
+              value={amountFrom}
+              onChange={(e) => dispatch(setAmountFrom(Number(e.target.value)))}
+              sx={{ mb: 2 }}
+            />
+          </Grid>
 
-          <Grid2 item>
+          <Grid item>
             <FormControl fullWidth>
               <InputLabel>Select To Currency</InputLabel>
               <Select
                 value={toCurrency}
-                onChange={(e) => setToCurrency(e.target.value)}
+                onChange={(e) => dispatch(setToCurrency(e.target.value))}
                 label="Select To Currency"
+                sx={{ mb: 2 }}
               >
                 {currencies.map((currency) => (
                   <MenuItem key={currency.code} value={currency.code}>
@@ -56,37 +109,37 @@ const CurrencyConverter = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid2>
-
-          <Grid2 item>
             <TextField
-              label="Amount to Convert"
-              type="number"
+              label="Amount in To Currency"
               fullWidth
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              type="number"
+              value={amountTo}
+              onChange={handleAmountToChange}
+              sx={{ mb: 2 }}
             />
-          </Grid2>
+          </Grid>
 
-          <Grid2 item>
-            <Button variant="contained" color="primary" fullWidth onClick={handleConversion}>
-              Convert
-            </Button>
-          </Grid2>
+          {isLoading && (
+            <Grid item>
+              <CircularProgress />
+            </Grid>
+          )}
 
-          {convertedAmount !== null && (
-            <Grid2 item>
+          {isError && (
+            <Grid item>
               <TextField
-                label="Converted Amount"
-                value={convertedAmount}
+                label="Error"
+                value={`Error: ${error?.message}`}
                 fullWidth
                 disabled
+                color="error"
+                sx={{ mb: 2 }}
               />
-            </Grid2>
+            </Grid>
           )}
-        </Grid2>
-      </form>
-    </Container>
+          </Paper>
+        </Grid>
+    </Box>
   );
 };
 

@@ -1,25 +1,30 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CurrencyState {
-  amount: number;
+  amountFrom: number;
+  amountTo: number;
   fromCurrency: string;
   toCurrency: string;
-  result: number;
+  exchangeRate: number;
 }
 
 const initialState: CurrencyState = {
-  amount: 0,
+  amountFrom: 1,
+  amountTo: 0, 
   fromCurrency: 'USD',
-  toCurrency: 'EUR',
-  result: 0,
+  toCurrency: 'PHP',
+  exchangeRate: 0,
 };
 
 const currencySlice = createSlice({
   name: 'currency',
   initialState,
   reducers: {
-    setAmount: (state, action: PayloadAction<number>) => {
-      state.amount = action.payload;
+    setAmountFrom: (state, action: PayloadAction<number>) => {
+      state.amountFrom = action.payload;
+    },
+    setAmountTo: (state, action: PayloadAction<number>) => {
+      state.amountTo = action.payload;
     },
     setFromCurrency: (state, action: PayloadAction<string>) => {
       state.fromCurrency = action.payload;
@@ -27,11 +32,11 @@ const currencySlice = createSlice({
     setToCurrency: (state, action: PayloadAction<string>) => {
       state.toCurrency = action.payload;
     },
-    setResult: (state, action: PayloadAction<number>) => {
-      state.result = action.payload;
+    setExchangeRate: (state, action: PayloadAction<number>) => {
+      state.exchangeRate = action.payload;
     },
   },
 });
 
-export const { setAmount, setFromCurrency, setToCurrency, setResult } = currencySlice.actions;
+export const { setAmountFrom, setAmountTo, setFromCurrency, setToCurrency, setExchangeRate } = currencySlice.actions;
 export default currencySlice.reducer;
